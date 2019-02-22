@@ -39,54 +39,66 @@ class Ball extends Rect {
 	}
 }
 
+
+class Pong {
+
+	constructor(canvas) {
+		this._canvas = canvas;
+		this._context = canvas.getContext("2d"); // canvas context
+		this.ball = new Ball; // Creates new ball
+
+		this.ball.pos.x = 100;
+		this.ball.pos.y = 50;
+		this.ball.vel.x = 100;
+		this.ball.vel.y = 100;
+
+
+
+		let lastTime;
+
+		//function callback(milliseconds) {  cant have a normal function in here needs to be an arrow function
+		const callback = (milliseconds) => {
+			if (lastTime) {
+				this.update((milliseconds - lastTime) / 1000); // add this. because the arrow function does not have a this context
+			}
+			lastTime = milliseconds;
+			requestAnimationFrame(callback);
+		};
+		callback();
+
+	}
+
+	// update ball position
+	update(dt) {
+		this.ball.pos.x += this.ball.vel.x * dt;
+		this.ball.pos.y += this.ball.vel.y * dt;
+
+		if (this.ball.left < 0 || this.ball.right > this._canvas.width) { // this makes the ball bounce
+			this.ball.vel.x = -this.ball.vel.x;
+		}
+		if (this.ball.top < 0 || this.ball.bottom > this._canvas.height) {
+			this.ball.vel.y = -this.ball.vel.y;
+		}
+
+
+		// canvas
+		this._context.fillStyle = "#000"; // black
+		this._context.fillRect(0, 0, this._canvas.width, this._canvas.height);
+
+		//ball
+		this._context.fillStyle = "#fff"; // black
+		this._context.fillRect(ball.pos.x, ball.pos.y, ball.size.x, ball.size.y);
+	}
+
+
+}
+
 const canvas = document.getElementById("pong");
-const context = canvas.getContext("2d"); // canvas context
 
-const ball = new Ball; // Creates new ball
-//console.log(ball);
-ball.pos.x = 100;
-ball.pos.y = 50;
-ball.vel.x = 100;
-ball.vel.y = 100;
+// initialize the virtual game
+
+const pong = new Pong(canvas);
 
 
 
-let lastTime;
-function callback(milliseconds) {
-	if (lastTime) {
-		update((milliseconds - lastTime) / 1000);
-	}
-	lastTime = milliseconds;
-	requestAnimationFrame(callback);
-}
 
-// update ball position
-function update(dt) {
-	ball.pos.x += ball.vel.x * dt;
-	ball.pos.y += ball.vel.y * dt;
-
-	//if (ball.pos.x < 0 || ball.pos.x > canvas.width) { // this makes the ball bounce
-	//	ball.vel.x = -ball.vel.x;
-	//}
-	//if (ball.pos.y < 0 || ball.pos.y > canvas.height) {
-	//	ball.vel.y = -ball.vel.y;
-	//}
-
-	if (ball.left < 0 || ball.right > canvas.width) { // this makes the ball bounce
-		ball.vel.x = -ball.vel.x;
-	}
-	if (ball.top < 0 || ball.bottom > canvas.height) {
-		ball.vel.y = -ball.vel.y;
-	}
-
-
-	// canvas
-	context.fillStyle = "#000"; // black
-	context.fillRect(0, 0, canvas.width, canvas.height);
-
-	//ball
-	context.fillStyle = "#fff"; // black
-	context.fillRect(ball.pos.x, ball.pos.y, ball.size.x, ball.size.y);
-}
-
-callback();
