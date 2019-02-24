@@ -40,6 +40,14 @@ class Ball extends Rect {
 }
 
 
+class Player extends Rect {
+	constructor() {
+		// super calls the parent constructor
+		super(20, 100); // 20 width, 100 height this is the dimensions of the player
+		this.score = 0;
+	}
+}
+
 class Pong {
 
 	constructor(canvas) {
@@ -52,7 +60,17 @@ class Pong {
 		this.ball.vel.x = 100;
 		this.ball.vel.y = 100;
 
+		// set up 2 new instances of players in an aray
+		this.players = [
+			new Player,
+			new Player
+		];
 
+		this.players[0].pos.x = 40;
+		this.players[1].pos.x = this._canvas.width - 40;
+		this.players.forEach(player => {
+			player.pos.y = this._canvas.height / 2;
+		})
 
 		let lastTime;
 
@@ -67,10 +85,21 @@ class Pong {
 		callback();
 
 	}
+
+	draw() {
+		// canvas
+		this._context.fillStyle = "#000"; // black
+		this._context.fillRect(0, 0, this._canvas.width, this._canvas.height);
+
+		this.drawRect(this.ball); // telling it to draw the ball
+
+		// draw the new player
+		this.players.forEach(player => this.drawRect(player));
+	}
 	drawRect(rect) {
 		//ball
 		this._context.fillStyle = "#fff"; // black
-		this._context.fillRect(rect.pos.x, rect.pos.y, rect.size.x, rect.size.y);
+		this._context.fillRect(rect.left, rect.top, rect.size.x, rect.size.y);
 	}
 	// update ball position
 	update(dt) {
@@ -84,11 +113,9 @@ class Pong {
 			this.ball.vel.y = -this.ball.vel.y;
 		}
 
-		// canvas
-		this._context.fillStyle = "#000"; // black
-		this._context.fillRect(0, 0, this._canvas.width, this._canvas.height);
+		this.players[1].pos.y = this.ball.pos.y;
 
-		this.drawRect(this.ball); // telling it to draw the ball
+		this.draw();
 	}
 
 }
@@ -99,6 +126,10 @@ const canvas = document.getElementById("pong");
 
 const pong = new Pong(canvas);
 
+// handler for the player mouse to move the bars position
 
+canvas.addEventListener('mousemove', event => {
+	pong.players[0].pos.y = event.offsetY;
+});
 
 
