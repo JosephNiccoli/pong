@@ -107,7 +107,7 @@ class Pong {
 		this.ball.pos.y += this.ball.vel.y * dt;
 
 		if (this.ball.left < 0 || this.ball.right > this._canvas.width) { // this makes the ball bounce
-			this.ball.vel.x = -this.ball.vel.x;
+			this.ball.vel.x = -this.ball.vel.x; 
 		}
 		if (this.ball.top < 0 || this.ball.bottom > this._canvas.height) {
 			this.ball.vel.y = -this.ball.vel.y;
