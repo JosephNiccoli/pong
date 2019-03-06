@@ -57,7 +57,7 @@ class Ball extends Rect {
 class Player extends Rect {
 	constructor() {
 		// super calls the parent constructor
-		super(20, 100); // 20 width, 100 height this is the dimensions of the player
+		super(20, 100); // 10 width, 100 height this is the dimensions of the player
 		this.score = 0;
 	}
 }
@@ -70,14 +70,14 @@ class Pong {
 		this.ball = new Ball; // Creates new ball
 
 
-		// set up 2 new instances of players in an aray
+		// set up 2 new instances of players in an array
 		this.players = [
 			new Player,
 			new Player
 		];
 
-		this.players[0].pos.x = 40;
-		this.players[1].pos.x = this._canvas.width - 40;
+		this.players[0].pos.x = 20;
+		this.players[1].pos.x = this._canvas.width - 20;
 		this.players.forEach(player => {
 			player.pos.y = this._canvas.height / 2;
 		});
@@ -94,6 +94,46 @@ class Pong {
 		};
 
 		callback();
+
+		// build an array for the score picture
+		//numbers are arranged by a 3x5 square
+		/* 111
+		   010
+		   010
+		   010
+		   111*/
+		this.CHAR_PIXEL = 10;
+		this.CHARS = [
+			"111101101101111",
+			"010010010010010",
+			"111001111100111",
+			"111001111001111",
+			"101101111001001",
+			"111100111001111",
+			"111100111101111",
+			"111001001001001",
+			"111101111101111",
+			"111101111001111"
+		].map(str => {
+			// draws a new canvas for each string
+			const canvas = document.createElement("canvas");
+			canvas.height = this.CHAR_PIXEL * 5;
+			canvas.width = this.CHAR_PIXEL * 3;
+			const context = canvas.getContext("2d");
+			context.fillStyle = "#fff";
+			str.split("").forEach((fill, i) => {
+				if (fill === "1") {
+					context.fillRect(
+						(i % 3) * this.CHAR_PIXEL,
+						(i / 3 | 0) * this.CHAR_PIXEL,
+						this.CHAR_PIXEL,
+						this.CHAR_PIXEL);
+				}
+			});
+
+			return canvas;
+		});
+
 		this.reset();
 
 	}
@@ -106,11 +146,10 @@ class Pong {
 			player.right > ball.left &&
 			player.top < ball.bottom &&
 			player.bottom > ball.top) {
-			// need to negate the ball velocity with the player
-			ball.vel.x = -ball.vel.x;
-
-			// increase the ball speed every time it hits the paddle
-			ball.vel.len *= 1.05;
+			const len = ball.vel.len; // save ball velocity
+			ball.vel.x = -ball.vel.x; // negate vertical velocity
+			ball.vel.y += 300 * (Math.random() - .5); // fudge horizontal velocity
+			ball.vel.len = len * 1.05; // replace the length/spped and increase it by 5 percent 
 		}
 
 	}
@@ -125,11 +164,27 @@ class Pong {
 
 		// draw the new player
 		this.players.forEach(player => this.drawRect(player));
+		this.drawScore();
 	}
 	drawRect(rect) {
 		//ball
 		this._context.fillStyle = "#fff"; // black
 		this._context.fillRect(rect.left, rect.top, rect.size.x, rect.size.y);
+	}
+
+	drawScore() {
+		// the alignment of the score on the canvas needs to be centered
+		const align = this._canvas.width / 3;
+		const CHAR_W = this.CHAR_PIXEL * 4; // this is the character width of 4 pixels leaving one blank
+		this.players.forEach((player, index) => { // to convert players score to the characters on screen
+			const chars = player.score.toString().split("");
+			const offset = align * (index + 1) -
+				(CHAR_W * chars.length / 2) +
+				this.CHAR_PIXEL / 2;
+			chars.forEach((char, pos) => {
+				this._context.drawImage(this.CHARS[char | 0], offset + pos * CHAR_W, 20);
+			});
+		});
 	}
 
 	// RESETS THE BALL
@@ -187,7 +242,8 @@ const pong = new Pong(canvas);
 // handler for the player mouse to move the bars position
 
 canvas.addEventListener('mousemove', event => {
-	pong.players[0].pos.y = event.offsetY;
+	const scale = event.offsetY / event.target.getBoundingClientRect().height; // to midigate the new size of the screen for the paddels
+	pong.players[0].pos.y = canvas.height * scale;
 });
 canvas.addEventListener('click', event => {
 	pong.start();
